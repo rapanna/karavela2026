@@ -92,7 +92,6 @@ function k26_specifikace_render( WP_Post $post ): void {
 
     $id_zajezdu         = get_post_meta( $post->ID, 'id_zajezdu',  true );
     $typ_zajezdu        = get_post_meta( $post->ID, 'typ_zajezdu', true );
-    $akce               = get_post_meta( $post->ID, 'akce',        true );
     $pocet_klientu      = get_post_meta( $post->ID, 'pocet_klientu', true );
     $seznam_odjezdovych = get_post_meta( $post->ID, 'seznam_odjezdovych_mist', true );
     $pojisteni          = get_post_meta( $post->ID, 'pojisteni',   true );
@@ -132,15 +131,6 @@ function k26_specifikace_render( WP_Post $post ): void {
                     <option value="<?php echo $val; ?>" <?php selected( $typ_zajezdu, $val ); ?>><?php echo esc_html( $label ); ?></option>
                     <?php endforeach; ?>
                 </select>
-            </td>
-        </tr>
-        <tr>
-            <th>Akce</th>
-            <td>
-                <label>
-                    <input type="checkbox" name="akce" value="1" <?php checked( $akce, '1' ); ?>>
-                    Zájezd je označen jako akce
-                </label>
             </td>
         </tr>
 
@@ -262,12 +252,6 @@ add_action( 'save_post_trip', function ( int $post_id ): void {
 
     update_post_meta( $post_id, 'id_zajezdu',  sanitize_text_field( $_POST['id_zajezdu']  ?? '' ) );
     update_post_meta( $post_id, 'typ_zajezdu', sanitize_text_field( $_POST['typ_zajezdu'] ?? '1' ) );
-
-    if ( ! empty( $_POST['akce'] ) ) {
-        update_post_meta( $post_id, 'akce', '1' );
-    } else {
-        delete_post_meta( $post_id, 'akce' );
-    }
 
     // Cena zahrnuje / nezahrnuje – pole řádků
     foreach ( [ 'k26_cena_zahrnuje', 'k26_cena_nezahrnuje' ] as $key ) {
