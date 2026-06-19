@@ -7974,15 +7974,16 @@ table.bordertable th, table.bordertable td {
 .box-info {
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
+    width: 85%;
     margin: 0;
     z-index: 1;
-    background-color: rgba(255, 199, 8, 0.92);
+    background-color: #ffc708;
     color: #311c00;
-    font-size: 80%;
+    font-size: 65%;
     font-style: italic;
-    padding: 0.5em 0.75em;
+    text-align: right;
+    padding: 7px 5px;
     line-height: 1.3;
 }
 
