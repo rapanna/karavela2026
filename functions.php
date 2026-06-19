@@ -95,6 +95,9 @@ function k26_enqueue() {
         wp_enqueue_style(  'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', [], '1.9.4' );
         wp_enqueue_script( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',  [], '1.9.4', true );
 
+        // JS detailu zájezdu – inicializace mapy + galerie (slick/GLightbox)
+        wp_enqueue_script( 'k26-single-trip', get_template_directory_uri() . '/js/single-trip.js', array( 'jquery', 'k26-slick', 'leaflet' ), $ver, true );
+
         // Rezervační formulář – (volitelně) Google reCAPTCHA v2
         if ( k26_setting( 'karavela_recaptcha_site' ) ) {
             wp_enqueue_script( 'google-recaptcha', 'https://www.google.com/recaptcha/api.js', array(), null, true );

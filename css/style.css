@@ -7986,3 +7986,8 @@ table.bordertable th, table.bordertable td {
     line-height: 1.3;
 }
 
+/* ── Archiv zájezdů: postupné odkrývání („Zobraz další zájezdy") ─────────── */
+.k26-trip-hidden { display: none; }
+.k26-trip-card { transition: opacity .45s ease, transform .45s ease; }
+.k26-trip-card.k26-revealing { opacity: 0; transform: translateY(12px); }
+

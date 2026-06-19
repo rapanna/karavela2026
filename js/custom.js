@@ -205,10 +205,48 @@ jQuery( document ).ready(function() {
 
                     if( $('.pagination').length){
                         $('.pagination').find('.current').removeClass('current').next().addClass('current');
-                        
+
                     }
                 }
             );
         });
     }
 });
+
+// ── Archiv zájezdů: postupné odkrývání „Zobraz další zájezdy" ─────────────────
+(function(){
+    var btn = document.querySelector('.k26-load-more');
+    if ( ! btn ) return;
+    var batch = 12, stagger = 90, busy = false;
+
+    btn.addEventListener('click', function(){
+        if ( busy ) return;
+        var hidden = document.querySelectorAll('.k26-trip-hidden');
+        if ( ! hidden.length ) return;
+        busy = true;
+        var toShow = Math.min( batch, hidden.length );
+
+        // Postupné odkrývání s lehkým náběhem – aby bylo jasné, co se děje
+        for ( var i = 0; i < toShow; i++ ) {
+            (function( card, delay ){
+                setTimeout(function(){
+                    card.classList.add( 'k26-revealing' );      // výchozí stav (opacity 0)
+                    card.classList.remove( 'k26-trip-hidden' );  // zobraz
+                    requestAnimationFrame(function(){
+                        requestAnimationFrame(function(){
+                            card.classList.remove( 'k26-revealing' ); // plynulý náběh
+                        });
+                    });
+                }, delay);
+            })( hidden[i], i * stagger );
+        }
+
+        // Po dokončení dávky uvolni tlačítko a případně ho schovej
+        setTimeout(function(){
+            busy = false;
+            if ( document.querySelectorAll( '.k26-trip-hidden' ).length === 0 ) {
+                btn.style.display = 'none';
+            }
+        }, toShow * stagger + 200);
+    });
+})();

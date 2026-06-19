@@ -75,7 +75,7 @@ usort( $trips, fn( $a, $b ) => $a['timestamp'] <=> $b['timestamp'] );
 
     <div class="row recommended-trips">
       <?php if ( $trips ) : foreach ( $trips as $trip ) :
-          $cena_default  = number_format( $trip['cena'], 0, ',', ' ' );
+          $cena_default  = number_format( (float) $trip['cena'], 0, ',', ' ' );
           $cena_firstmin = firstminute( $trip['tm_od'], $trip['cena'] );
           $moreterm      = $trip['moreterm'];
       ?>
