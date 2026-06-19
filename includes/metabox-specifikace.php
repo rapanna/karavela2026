@@ -96,6 +96,7 @@ function k26_specifikace_render( WP_Post $post ): void {
     $pocet_klientu      = get_post_meta( $post->ID, 'pocet_klientu', true );
     $seznam_odjezdovych = get_post_meta( $post->ID, 'seznam_odjezdovych_mist', true );
     $pojisteni          = get_post_meta( $post->ID, 'pojisteni',   true );
+    $doplnujici_text    = get_post_meta( $post->ID, 'k26_doplnujici_text', true );
 
     $zahrnuje_items   = k26_get_cena_items( $post->ID, 'k26_cena_zahrnuje',   'cena_zahrnuje' );
     $nezahrnuje_items = k26_get_cena_items( $post->ID, 'k26_cena_nezahrnuje', 'cena_nezahrnuje' );
@@ -178,6 +179,14 @@ function k26_specifikace_render( WP_Post $post ): void {
                     <input type="checkbox" name="pojisteni" value="1" <?php checked( $pojisteni, '1' ); ?>>
                     Nelze pojistit (skryje odkaz na cestovní pojištění)
                 </label>
+            </td>
+        </tr>
+
+        <tr>
+            <th>Doplňující text</th>
+            <td>
+                <textarea name="k26_doplnujici_text" rows="4"><?php echo esc_textarea( $doplnujici_text ); ?></textarea>
+                <p class="k26-field-note">Volný text pod sekcí „Cena nezahrnuje" na webu (zachová odstavce).</p>
             </td>
         </tr>
 
@@ -268,6 +277,8 @@ add_action( 'save_post_trip', function ( int $post_id ): void {
     }
 
     update_post_meta( $post_id, 'pocet_klientu', wp_kses_post( $_POST['pocet_klientu'] ?? '' ) );
+
+    update_post_meta( $post_id, 'k26_doplnujici_text', wp_kses_post( $_POST['k26_doplnujici_text'] ?? '' ) );
 
     $mista = implode( "\n", array_filter( array_map( 'trim', explode( "\n", $_POST['seznam_odjezdovych_mist'] ?? '' ) ) ) );
     update_post_meta( $post_id, 'seznam_odjezdovych_mist', sanitize_textarea_field( $mista ) );

@@ -33,6 +33,7 @@
     $pojisteni          = get_post_meta( $post_id, 'pojisteni',        true );
     $zahrnuje_items     = k26_get_cena_items( $post_id, 'k26_cena_zahrnuje',   'cena_zahrnuje' );
     $nezahrnuje_items   = k26_get_cena_items( $post_id, 'k26_cena_nezahrnuje', 'cena_nezahrnuje' );
+    $doplnujici_text    = get_post_meta( $post_id, 'k26_doplnujici_text', true );
 
     // GPS
     $longitudes = (array) ( get_post_meta( $post_id, 'longitudes', true ) ?: [] );
@@ -149,7 +150,7 @@
                     <?php endif; ?>
 
                     <!-- ── Cena zahrnuje / nezahrnuje ────────────────────────── -->
-                    <?php if ( $zahrnuje_items || $nezahrnuje_items ) : ?>
+                    <?php if ( $zahrnuje_items || $nezahrnuje_items || $doplnujici_text ) : ?>
                     <div class="reference top_trip">
                         <?php if ( $zahrnuje_items ) : ?>
                         <div class="row">
@@ -171,6 +172,13 @@
                                 <?php if ( empty( $pojisteni ) || $pojisteni === '0' ) : ?>
                                 <ul class="cestpojisteni"><li><strong><a href="<?php echo esc_url( get_permalink( 145 ) ); ?>">Zajišťujeme tato cestovní pojištění</a></strong></li></ul>
                                 <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ( $doplnujici_text ) : ?>
+                        <div class="row">
+                            <div class="col-sm-12 k26-doplnujici-text" style="margin-top:0.8em">
+                                <?php echo wpautop( wp_kses_post( $doplnujici_text ) ); ?>
                             </div>
                         </div>
                         <?php endif; ?>
