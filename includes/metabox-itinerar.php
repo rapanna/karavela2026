@@ -33,6 +33,8 @@ add_action( 'admin_enqueue_scripts', function ( $hook ) {
         '1.9.4',
         true
     );
+    // Pro drag & drop řazení bodů (součást WP adminu)
+    wp_enqueue_script( 'jquery-ui-sortable' );
 
     wp_add_inline_style( 'wp-admin', '
         #k26_itinerar .k26-itin-layout { display: flex; gap: 16px; align-items: flex-start; }
@@ -46,11 +48,18 @@ add_action( 'admin_enqueue_scripts', function ( $hook ) {
         #k26_itinerar #k26-itin-map { width: 100%; height: 420px; border: 1px solid #ddd; }
         #k26_itinerar #k26-itin-search { display: flex; gap: 6px; margin-top: 8px; }
         #k26_itinerar #k26-itin-search input { flex: 1; }
+        #k26_itinerar #k26-itin-zoom { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+        #k26_itinerar #k26-itin-zoom label { font-weight: 600; }
+        #k26_itinerar #k26-itin-zoom input[type=number] { width: 64px; }
+        #k26_itinerar #k26-itin-zoom .k26-itin-hint { margin: 0; flex-basis: 100%; }
         #k26_itinerar table { border-collapse: collapse; width: 100%; }
         #k26_itinerar th { background: #f0f0f1; padding: 5px 8px; text-align: left; font-size: 11px; }
         #k26_itinerar td { padding: 4px 6px; font-size: 12px; vertical-align: middle; }
         #k26_itinerar td input[type=text] { width: 100%; box-sizing: border-box; font-size: 12px; }
-        #k26_itinerar .k26-col-nr   { width: 24px; text-align: center; color: #999; }
+        #k26_itinerar .k26-col-nr   { width: 24px; text-align: center; color: #999; cursor: grab; user-select: none; }
+        #k26_itinerar .k26-col-nr:active { cursor: grabbing; }
+        #k26_itinerar tr.k26-itin-row.ui-sortable-helper { display: table; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+        #k26_itinerar tr.k26-sortable-placeholder { background: #fffbe5; outline: 1px dashed #f0c33c; }
         #k26_itinerar .k26-col-lat,
         #k26_itinerar .k26-col-lng  { width: 90px; }
         #k26_itinerar .k26-col-del  { width: 28px; text-align: center; }
@@ -75,10 +84,7 @@ function k26_itinerar_render( WP_Post $post ): void {
     $longitudes = (array) ( get_post_meta( $post->ID, 'longitudes',  true ) ?: [] );
     $latitudes  = (array) ( get_post_meta( $post->ID, 'latitudes',   true ) ?: [] );
     $city_names = (array) ( get_post_meta( $post->ID, 'city-names',  true ) ?: [] );
-
-    $points_json = wp_json_encode(
-        array_map( null, $latitudes, $longitudes, $city_names )
-    );
+    $map_zoom   = get_post_meta( $post->ID, 'k26_map_zoom', true );
     ?>
 
     <!-- Modal pro název bodu -->
@@ -101,6 +107,12 @@ function k26_itinerar_render( WP_Post $post ): void {
         <div id="k26-itin-search">
             <input type="text" id="k26-itin-search-input" placeholder="Vyhledat místo (Nominatim)…">
             <button type="button" id="k26-itin-search-btn" class="button">Hledat</button>
+        </div>
+        <div id="k26-itin-zoom">
+            <label for="k26-map-zoom">Přiblížení mapy na webu:</label>
+            <input type="number" id="k26-map-zoom" name="k26_map_zoom" min="1" max="18" step="1" value="<?php echo esc_attr( $map_zoom ); ?>">
+            <button type="button" id="k26-zoom-grab" class="button">Převzít z mapy</button>
+            <span class="k26-itin-hint">Prázdné = automatické přizpůsobení trase.</span>
         </div>
     </div>
 
@@ -130,7 +142,7 @@ function k26_itinerar_render( WP_Post $post ): void {
         <?php endforeach; ?>
         </tbody>
         <tfoot>
-            <tr><td colspan="5"><p class="k26-itin-hint">Klikněte na mapu pro přidání bodu. Pořadí řádků = pořadí trasy.</p></td></tr>
+            <tr><td colspan="5"><p class="k26-itin-hint">Klikněte na mapu pro přidání bodu. Pin lze v mapě uchopit a posunout. Pořadí řádků = pořadí trasy. Přetažením za číslo (#) body přeskládáte.</p></td></tr>
         </tfoot>
     </table>
     </div><!-- /.k26-itin-col-points -->
@@ -140,10 +152,10 @@ function k26_itinerar_render( WP_Post $post ): void {
     <script>
     document.addEventListener('DOMContentLoaded', function() {
     (function() {
-        var points  = <?php echo $points_json; ?>;
-        var map     = L.map('k26-itin-map', { scrollWheelZoom: false });
-        var markers = [];
+        var map      = L.map('k26-itin-map', { scrollWheelZoom: false });
         var polyline = L.polyline([], { color: '#e63e23', weight: 3 }).addTo(map);
+        var markers  = [];                                   // odvozeno z pořadí řádků
+        var tbody    = document.getElementById('k26-itin-body');
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap',
@@ -153,15 +165,17 @@ function k26_itinerar_render( WP_Post $post ): void {
         // Výchozí pohled – střed Evropy / světa
         map.setView([20, 15], 2);
 
-        // ── Inicializace z uložených dat ─────────────────────────────────────
-        if (points && points.length && points[0]) {
-            points.forEach(function(p) {
-                if (p && p[0] != null && p[1] != null) {
-                    addMarkerToMap(parseFloat(p[0]), parseFloat(p[1]), p[2] || '');
-                }
-            });
-            fitMap();
-        }
+        // ── Inicializace z již vykreslených řádků ────────────────────────────
+        Array.prototype.forEach.call(tbody.querySelectorAll('.k26-itin-row'), function(tr) {
+            var lat  = parseFloat(tr.querySelector('.k26-lat').value);
+            var lng  = parseFloat(tr.querySelector('.k26-lng').value);
+            var name = tr.querySelector('input[name="gps_info_name[]"]').value;
+            if (!isNaN(lat) && !isNaN(lng)) {
+                linkMarker(tr, lat, lng, name);
+            }
+        });
+        syncFromRows();
+        applyMapView();
 
         // ── Klik na mapu → modal ─────────────────────────────────────────────
         var pendingLatLng = null;
@@ -198,6 +212,14 @@ function k26_itinerar_render( WP_Post $post ): void {
             if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
         });
 
+        // ── Převzít aktuální přiblížení admin mapy do pole pro frontend ──────
+        document.getElementById('k26-zoom-grab').addEventListener('click', function() {
+            document.getElementById('k26-map-zoom').value = map.getZoom();
+        });
+
+        // Změna pole zoomu → živý náhled v admin mapě (stejně jako na webu)
+        document.getElementById('k26-map-zoom').addEventListener('change', applyMapView);
+
         function doSearch() {
             var q = document.getElementById('k26-itin-search-input').value.trim();
             if (!q) return;
@@ -220,28 +242,62 @@ function k26_itinerar_render( WP_Post $post ): void {
 
         // ── Přidání bodu ─────────────────────────────────────────────────────
         function addPoint(lat, lng, name) {
-            addMarkerToMap(lat, lng, name);
-            addTableRow(lat, lng, name);
+            var tr = addTableRow(lat, lng, name);
+            linkMarker(tr, lat, lng, name);
+            syncFromRows();
             // fitMap() se nevolá – zachovává aktuální pohled uživatele
         }
 
-        function addMarkerToMap(lat, lng, name) {
-            var m = L.marker([lat, lng]).addTo(map);
+        function makeMarker(lat, lng, name) {
+            var m = L.marker([lat, lng], { draggable: true }).addTo(map);
             if (name) m.bindPopup(name);
-            markers.push(m);
-            redrawPolyline();
+            // Posun pinu po mapě → zapiš nové souřadnice do řádku a překresli trasu
+            m.on('dragend', function() {
+                var ll = m.getLatLng();
+                if (m._row) {
+                    m._row.querySelector('.k26-lat').value = ll.lat.toFixed(6);
+                    m._row.querySelector('.k26-lng').value = ll.lng.toFixed(6);
+                }
+                syncFromRows();
+            });
+            return m;
         }
 
-        function redrawPolyline() {
+        // Vytvoří marker a obousměrně ho propojí s řádkem tabulky
+        function linkMarker(tr, lat, lng, name) {
+            tr._marker = makeMarker(lat, lng, name);
+            tr._marker._row = tr;
+        }
+
+        // markers[] + polyline + čísla řádků se vždy odvodí z aktuálního pořadí řádků
+        function syncFromRows() {
+            markers = Array.prototype.map.call(
+                tbody.querySelectorAll('.k26-itin-row'),
+                function(tr){ return tr._marker; }
+            ).filter(Boolean);
             polyline.setLatLngs(markers.map(function(m){ return m.getLatLng(); }));
+            renumberRows();
         }
 
-        function fitMap() {
+        // Hodnota z pole pro frontend zoom (null = automaticky podle trasy)
+        function getManualZoom() {
+            var v = parseInt(document.getElementById('k26-map-zoom').value, 10);
+            return isNaN(v) ? null : v;
+        }
+
+        // Nastaví pohled admin mapy – respektuje ruční zoom (stejně jako frontend)
+        function applyMapView() {
+            if (!markers.length) return;
+            var z = getManualZoom();
             if (markers.length === 1) {
-                map.setView(markers[0].getLatLng(), 6);
-            } else if (markers.length > 1) {
-                var group = new L.featureGroup(markers);
-                map.fitBounds(group.getBounds().pad(0.15));
+                map.setView(markers[0].getLatLng(), z === null ? 6 : z);
+            } else {
+                var bounds = new L.featureGroup(markers).getBounds();
+                if (z === null) {
+                    map.fitBounds(bounds.pad(0.15));
+                } else {
+                    map.setView(bounds.getCenter(), z);
+                }
             }
         }
 
@@ -258,21 +314,34 @@ function k26_itinerar_render( WP_Post $post ): void {
                 '<td class="k26-col-lng"><input type="text" name="gps_info_lot[]" value="' + escAttr(lng.toFixed(6)) + '" class="k26-lng"></td>' +
                 '<td class="k26-col-del"><button type="button" class="k26-itin-del" title="Odebrat">✕</button></td>';
             tbody.appendChild(tr);
+            return tr;
         }
 
         // Odebrat řádek
-        document.getElementById('k26-itin-body').addEventListener('click', function(e) {
+        tbody.addEventListener('click', function(e) {
             if (!e.target.classList.contains('k26-itin-del')) return;
-            var rows  = Array.from(document.querySelectorAll('.k26-itin-row'));
-            var idx   = rows.indexOf(e.target.closest('tr'));
-            e.target.closest('tr').remove();
-            // Odeber marker
-            if (markers[idx]) {
-                map.removeLayer(markers[idx]);
-                markers.splice(idx, 1);
-                redrawPolyline();
-            }
-            renumberRows();
+            var tr = e.target.closest('tr');
+            if (tr._marker) map.removeLayer(tr._marker);
+            tr.remove();
+            syncFromRows();
+        });
+
+        // ── Drag & drop řazení řádků (jQuery UI Sortable, úchyt = sloupec #) ──
+        jQuery(function($) {
+            $(tbody).sortable({
+                axis: 'y',
+                handle: '.k26-col-nr',
+                items: '> tr.k26-itin-row',
+                placeholder: 'k26-sortable-placeholder',
+                forcePlaceholderSize: true,
+                helper: function(e, tr) {
+                    var $orig = tr.children();
+                    var $helper = tr.clone();
+                    $helper.children().each(function(i){ $(this).width($orig.eq(i).width()); });
+                    return $helper;
+                },
+                update: function() { syncFromRows(); }
+            });
         });
 
         function renumberRows() {
@@ -316,4 +385,12 @@ add_action( 'save_post_trip', function ( int $post_id ): void {
     update_post_meta( $post_id, 'latitudes',   $clean_lats );
     update_post_meta( $post_id, 'longitudes',  $clean_lngs );
     update_post_meta( $post_id, 'city-names',  $clean_names );
+
+    // Přiblížení mapy na frontendu (1–18); prázdné = automaticky podle trasy
+    $zoom = trim( (string) ( $_POST['k26_map_zoom'] ?? '' ) );
+    if ( $zoom === '' ) {
+        delete_post_meta( $post_id, 'k26_map_zoom' );
+    } else {
+        update_post_meta( $post_id, 'k26_map_zoom', max( 1, min( 18, (int) $zoom ) ) );
+    }
 } );

@@ -180,11 +180,13 @@
                     <!-- ── GPS mapa ──────────────────────────────────────────── -->
                     <?php if ( $ma_mapu ) :
                         $gps_points = array_map( null, $latitudes, $longitudes, $city_names );
+                        $map_zoom   = get_post_meta( $post_id, 'k26_map_zoom', true );
                     ?>
                     <div class="google-map-container">
                         <div id="map-gps-route"
                              style="width:100%;height:350px;"
-                             data-points="<?php echo esc_attr( wp_json_encode( $gps_points ) ); ?>">
+                             data-points="<?php echo esc_attr( wp_json_encode( $gps_points ) ); ?>"
+                             data-zoom="<?php echo esc_attr( $map_zoom ); ?>">
                         </div>
                     </div>
                     <script>
@@ -192,6 +194,7 @@
                         if (typeof L === 'undefined') return;
                         var el = document.getElementById('map-gps-route');
                         var pts = JSON.parse(el.dataset.points || '[]');
+                        var manualZoom = parseInt(el.dataset.zoom, 10); // NaN = automaticky
                         var map = L.map(el, { scrollWheelZoom: false });
                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -206,10 +209,15 @@
                             if (name) m.bindPopup(name);
                         });
                         if (latlngs.length === 1) {
-                            map.setView(latlngs[0], 6);
+                            map.setView(latlngs[0], isNaN(manualZoom) ? 6 : manualZoom);
                         } else if (latlngs.length > 1) {
                             L.polyline(latlngs, { color: '#e63e23', weight: 3 }).addTo(map);
-                            map.fitBounds(L.latLngBounds(latlngs).pad(0.15));
+                            var bounds = L.latLngBounds(latlngs);
+                            if (isNaN(manualZoom)) {
+                                map.fitBounds(bounds.pad(0.15));
+                            } else {
+                                map.setView(bounds.getCenter(), manualZoom);
+                            }
                         }
                     }); // DOMContentLoaded
                     </script>
