@@ -7239,16 +7239,7 @@ body.front .slider-item__title {
     font-weight: bold;
 }
 
-.content--trip {
-    background-color: #f7f7f6;
-}
-
-/* Drobečková nav sladěná s šedým pozadím detailových stránek (content--trip) */
-body.single-trip .breadcrumbs-bar,
-body.single-reportaze .breadcrumbs-bar,
-body.single-pruvodce .breadcrumbs-bar {
-    background-color: #f7f7f6;
-}
+/* .content--trip: šedé pozadí odstraněno (podstránky bez šedé). */
 
 .content--trip-right {
     padding-top: 5em !important;
