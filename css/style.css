@@ -7160,6 +7160,13 @@ body.front .slider-item__title {
 .recommended-trips-trip .recommended-trips-date {
     font-size: 77.77778%;
     padding-left: 2.14286em;
+    padding-right: 1.25em;
+    padding-bottom: 0.75em;
+}
+
+/* Text reference bez jména (první prvek) – ať nadpis/text nelepí na horní okraj */
+.recommended-trips-trip .recommended-trips-date:first-child {
+    padding-top: 1.125em;
 }
 
 .recommended-trips-trip .recommended-trips-cost {

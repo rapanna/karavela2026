@@ -18,11 +18,9 @@
     $prog_den   = (array) ( get_post_meta( $post_id, 'k26_prog_den',   true ) ?: [] );
     $prog_popis = (array) ( get_post_meta( $post_id, 'k26_prog_popis', true ) ?: [] );
 
-    // Reference
-    $ref_jmena    = (array) ( get_post_meta( $post_id, 'k26_ref_jmeno',   true ) ?: [] );
-    $ref_foto_ids = (array) ( get_post_meta( $post_id, 'k26_ref_foto_id', true ) ?: [] );
-    $ref_texty    = (array) ( get_post_meta( $post_id, 'k26_ref_text',    true ) ?: [] );
-    $ma_reference = ! empty( array_filter( $ref_jmena ) );
+    // Reference (nový repeater nebo fallback na staré reference_box)
+    $references   = k26_get_references( $post_id );
+    $ma_reference = ! empty( $references );
 
     // Galerie
     $gallery_id = (int) get_post_meta( $post_id, 'trip_ngg_gallery_id', true );
@@ -217,22 +215,26 @@
                         <div class="row">
                             <div class="col-sm-12"><h3>Reference</h3></div>
                         </div>
-                        <?php foreach ( $ref_jmena as $i => $jmeno ) :
-                            if ( ! trim( $jmeno ) ) continue;
-                            $foto_id  = (int) ( $ref_foto_ids[ $i ] ?? 0 );
+                        <?php foreach ( $references as $ref ) :
+                            $jmeno    = $ref['jmeno'];
+                            $text     = $ref['text'];
+                            $foto_id  = $ref['foto_id'];
                             $foto_url = $foto_id ? wp_get_attachment_image_url( $foto_id, 'square_thumbnail' ) : '';
-                            $text     = $ref_texty[ $i ] ?? '';
                         ?>
                         <div class="recommended-trips-trip">
                             <div class="row">
+                                <?php if ( $foto_url ) : ?>
                                 <div class="col-sm-3">
-                                    <?php if ( $foto_url ) : ?>
                                     <img src="<?php echo esc_url( $foto_url ); ?>" alt="<?php echo esc_attr( $jmeno ); ?>" class="recommended-trips__img">
-                                    <?php endif; ?>
                                 </div>
                                 <div class="col-sm-9">
+                                <?php else : ?>
+                                <div class="col-sm-12">
+                                <?php endif; ?>
+                                    <?php if ( $jmeno !== '' ) : ?>
                                     <h4 class="recommended-trips__title"><?php echo esc_html( $jmeno ); ?></h4>
-                                    <p class="recommended-trips-date"><?php echo wp_kses_post( $text ); ?></p>
+                                    <?php endif; ?>
+                                    <div class="recommended-trips-date"><?php echo wpautop( wp_kses_post( $text ) ); ?></div>
                                 </div>
                             </div>
                         </div>

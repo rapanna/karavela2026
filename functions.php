@@ -407,6 +407,38 @@ function firstminute( $datum, $cena ) {
     return '';
 }
 
+// ─── Reference zájezdu: nový repeater NEBO fallback na staré reference_box ─────
+/**
+ * Vrátí pole referencí zájezdu: [ ['jmeno'=>, 'text'=>, 'foto_id'=>], ... ].
+ * Primárně nový repeater k26_ref_* (více referencí); když je prázdný,
+ * použije staré jednopolové reference_box (HTML blok = jedno svědectví).
+ */
+function k26_get_references( int $post_id ): array {
+    $jmena = (array) ( get_post_meta( $post_id, 'k26_ref_jmeno',   true ) ?: [] );
+    $texty = (array) ( get_post_meta( $post_id, 'k26_ref_text',    true ) ?: [] );
+    $fota  = (array) ( get_post_meta( $post_id, 'k26_ref_foto_id', true ) ?: [] );
+
+    $out = array();
+    $n   = max( count( $jmena ), count( $texty ), count( $fota ) );
+    for ( $i = 0; $i < $n; $i++ ) {
+        $jmeno = trim( (string) ( $jmena[ $i ] ?? '' ) );
+        $text  = (string) ( $texty[ $i ] ?? '' );
+        $foto  = (int) ( $fota[ $i ] ?? 0 );
+        if ( $jmeno === '' && trim( $text ) === '' && ! $foto ) continue;
+        $out[] = array( 'jmeno' => $jmeno, 'text' => $text, 'foto_id' => $foto );
+    }
+
+    // Fallback: staré reference_box (jeden HTML blok)
+    if ( ! $out ) {
+        $box = (string) get_post_meta( $post_id, 'reference_box', true );
+        if ( trim( wp_strip_all_tags( $box ) ) !== '' ) {
+            $out[] = array( 'jmeno' => '', 'text' => $box, 'foto_id' => 0 );
+        }
+    }
+
+    return $out;
+}
+
 // ─── Pomocná funkce: české měsíce ─────────────────────────────────────────────
 
 function k26_cesky_mesic( int $mesic ): string {
