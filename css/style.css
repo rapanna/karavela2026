@@ -7996,6 +7996,28 @@ table.bordertable th, table.bordertable td {
 
 /* ── Archiv zájezdů: postupné odkrývání („Zobraz další zájezdy") ─────────── */
 .k26-trip-hidden { display: none; }
+
+/* Tlačítko „Zobraz další" – hnědá varianta v designu webu (hranaté) */
+.btn.k26-load-more,
+.btn.k26-load-more:focus,
+.btn.k26-load-more.focus {
+    background-color: #4e2d00;
+    border: 0;
+    border-radius: 0;
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.9em 2em;
+    margin-bottom: 3em;
+    transition: background-color .2s ease;
+}
+.btn.k26-load-more:hover,
+.btn.k26-load-more:active,
+.btn.k26-load-more:active:focus {
+    background-color: #693c00;
+    color: #fff;
+}
+
 .k26-trip-card { transition: opacity .45s ease, transform .45s ease; }
 .k26-trip-card.k26-revealing { opacity: 0; transform: translateY(12px); }
 
