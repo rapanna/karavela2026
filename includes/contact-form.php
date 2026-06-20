@@ -29,6 +29,13 @@ function k26_handle_contact_submit( $post_id ) {
 		return $result;
 	}
 
+	// Rate-limit: max 5 odeslání / 10 min z jedné IP (helper z reservation-form.php)
+	if ( k26_form_rate_limited( 'contact' ) ) {
+		$result['type']    = 'error';
+		$result['message'] = 'Příliš mnoho pokusů. Zkuste to prosím za chvíli znovu nebo nám zavolejte.';
+		return $result;
+	}
+
 	// Honeypoty: reservace_web i titul musí být prázdné
 	if ( ! empty( $_POST['reservace_web'] ) || ! empty( trim( (string) ( $_POST['reservation_titul'] ?? '' ) ) ) ) {
 		$result['type']    = 'error';

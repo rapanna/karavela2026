@@ -50,6 +50,28 @@ function k26_verify_recaptcha( $response ) {
 }
 
 /**
+ * Rate-limit odesílání formulářů podle IP (transient).
+ * Vrací true, pokud je IP přes limit (= požadavek zablokovat).
+ *
+ * @param string $bucket Identifikátor formuláře (oddělené počítadlo).
+ * @param int    $max    Max. počet odeslání v okně.
+ * @param int    $window Délka okna v sekundách.
+ */
+function k26_form_rate_limited( $bucket, $max = 5, $window = 600 ) {
+	$ip = $_SERVER['REMOTE_ADDR'] ?? '';
+	if ( '' === $ip ) {
+		return false; // bez IP nelze spolehlivě omezit – nech projít
+	}
+	$key   = 'k26_rl_' . $bucket . '_' . md5( $ip );
+	$count = (int) get_transient( $key );
+	if ( $count >= $max ) {
+		return true;
+	}
+	set_transient( $key, $count + 1, $window );
+	return false;
+}
+
+/**
  * Zpracuje odeslaný rezervační formulář. Vrací pole se zprávou:
  *   [ 'type' => 'success'|'error'|'', 'message' => string ]
  */
@@ -64,6 +86,13 @@ function k26_handle_reservation_submit( $post_id ) {
 	if ( ! isset( $_POST['k26_res_nonce'] ) || ! wp_verify_nonce( $_POST['k26_res_nonce'], 'k26_reservation' ) ) {
 		$result['type']    = 'error';
 		$result['message'] = 'Platnost formuláře vypršela, zkuste jej prosím odeslat znovu.';
+		return $result;
+	}
+
+	// Rate-limit: max 5 odeslání / 10 min z jedné IP
+	if ( k26_form_rate_limited( 'reservation' ) ) {
+		$result['type']    = 'error';
+		$result['message'] = 'Příliš mnoho pokusů. Zkuste to prosím za chvíli znovu nebo nám zavolejte.';
 		return $result;
 	}
 
