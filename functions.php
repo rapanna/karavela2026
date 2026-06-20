@@ -15,6 +15,7 @@ require_once get_template_directory() . '/includes/metabox-itinerar.php';
 require_once get_template_directory() . '/includes/feed-sdovolenka.php';
 require_once get_template_directory() . '/includes/admin-options.php';
 require_once get_template_directory() . '/includes/reservation-form.php';
+require_once get_template_directory() . '/includes/contact-form.php';
 
 // ─── Theme setup ──────────────────────────────────────────────────────────────
 

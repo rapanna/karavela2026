@@ -52,6 +52,16 @@
 </div>
 <?php endif; ?>
 
+<?php if ( function_exists( 'bcn_display' ) ) : ?>
+<div class="breadcrumbs-bar">
+  <div class="container">
+    <div class="breadcrumbs" typeof="BreadcrumbList" vocab="https://schema.org/">
+      <?php bcn_display(); ?>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
+
 <main role="main" class="content content--subpage content--trip">
     <div class="container">
         <div class="row">
@@ -239,6 +249,7 @@
                 </div><!-- .single-trip__content -->
 
                 <?php k26_render_reservation_form( $post_id ); ?>
+                <?php k26_render_contact_form( $post_id ); ?>
 
             </div><!-- .col-md-12 -->
         </div><!-- .row -->

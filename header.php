@@ -62,7 +62,7 @@
       </div>
     </div>
 
-<?php if ( ! is_front_page() && function_exists( 'bcn_display' ) ) : ?>
+<?php if ( ! is_front_page() && ! is_singular( 'trip' ) && function_exists( 'bcn_display' ) ) : // na detailu zájezdu drobečky až pod obrázkem (single-trip.php) ?>
 <div class="breadcrumbs-bar">
   <div class="container">
     <div class="breadcrumbs" typeof="BreadcrumbList" vocab="https://schema.org/">
