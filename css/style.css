@@ -6723,6 +6723,29 @@ body.front .slider-item__title {
     font-family: "Roboto Condensed", Arial, sans-serif;
 }
 
+/* Archiv Průvodci – portrétní foto (tváře) + stejně vysoké karty (flexbox). */
+/* !important + vyšší specificita kvůli .box-link { min-height:580px !important } v media query */
+.row-pruvodci { display: flex; flex-wrap: wrap; }
+.row-pruvodci > [class*="col-"] { display: flex; margin-bottom: 1.5em; }
+.row-pruvodci .box { display: flex; flex-direction: column; width: 100%; margin-bottom: 0; }
+.row-pruvodci .box-link--pruvodce {
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    padding-bottom: 1.25em;
+}
+.row-pruvodci .box-link--pruvodce .box-link__img {
+    width: 100%;
+    height: 340px;
+    object-fit: cover;
+    object-position: center top;
+}
+
+/* Detail Průvodce – foto v levé kartě */
+.pruvodce-detail__foto { padding: 0; overflow: hidden; }
+.pruvodce-detail__foto img { display: block; width: 100%; height: auto; }
+
 @media only screen and (max-width: 1199px) {
     .reports .col-sm-4 {
         margin-bottom: 2em;
@@ -7217,6 +7240,13 @@ body.front .slider-item__title {
 }
 
 .content--trip {
+    background-color: #f7f7f6;
+}
+
+/* Drobečková nav sladěná s šedým pozadím detailových stránek (content--trip) */
+body.single-trip .breadcrumbs-bar,
+body.single-reportaze .breadcrumbs-bar,
+body.single-pruvodce .breadcrumbs-bar {
     background-color: #f7f7f6;
 }
 
