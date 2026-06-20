@@ -61,3 +61,13 @@
         </div>
       </div>
     </div>
+
+<?php if ( ! is_front_page() && function_exists( 'bcn_display' ) ) : ?>
+<div class="breadcrumbs-bar">
+  <div class="container">
+    <div class="breadcrumbs" typeof="BreadcrumbList" vocab="https://schema.org/">
+      <?php bcn_display(); ?>
+    </div>
+  </div>
+</div>
+<?php endif; ?>

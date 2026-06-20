@@ -57,12 +57,6 @@
         <div class="row">
             <div class="col-md-12 content--subpage__main content-trip">
 
-                <?php if ( function_exists( 'bcn_display' ) ) : ?>
-                <div class="breadcrumbs" typeof="BreadcrumbList" vocab="https://schema.org/">
-                    <?php bcn_display(); ?>
-                </div>
-                <?php endif; ?>
-
                 <h1 class="title title--text title--h1"><?php the_title(); ?></h1>
 
                 <div class="single-trip__content">

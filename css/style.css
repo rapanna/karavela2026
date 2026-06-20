@@ -7999,3 +7999,65 @@ table.bordertable th, table.bordertable td {
 .k26-trip-card { transition: opacity .45s ease, transform .45s ease; }
 .k26-trip-card.k26-revealing { opacity: 0; transform: translateY(12px); }
 
+/* ── Stránka Reference: jednotlivé reference jako oddělené karty ─────────── */
+.reference-item {
+    display: flex;
+    gap: 1em;
+    background: #fff;
+    box-shadow: 2px 2px 3px rgba(35, 31, 32, 0.08);
+    border-left: 3px solid #ffc708;
+    padding: 1em 1.25em;
+    margin-bottom: 1.25em;
+}
+.reference-item.k26-trip-hidden { display: none; }
+.reference-item__img {
+    flex: 0 0 90px;
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+.reference-item__body { flex: 1 1 auto; min-width: 0; }
+.reference-item__name { margin: 0 0 0.4em; font-size: 105%; }
+.reference-item__text { font-size: 90%; line-height: 1.5; }
+.reference-item__text p { margin: 0 0 0.6em; }
+.reference-item__text p:last-child { margin-bottom: 0; }
+.reference-item__trip {
+    display: inline-block;
+    margin-top: 0.6em;
+    font-size: 82%;
+    font-style: italic;
+    color: #8a5a00;
+}
+.reference-item__trip:before { content: "\2014\00a0"; }
+
+/* Stránka Reference – Doporučujeme zarovnané se začátkem první reference */
+.content--subpage__sidebar > .title--h2:first-child { margin-top: 0; }
+.content--subpage__main > .reference-item:first-child { margin-top: 0; }
+.content--subpage__sidebar { padding-top: 0; }
+
+/* Sidebar Doporučujeme – datum/cena do toku (oprava překryvu s názvem) */
+.content--subpage__sidebar .box--sidebar {
+    background: #fff;
+    box-shadow: 2px 2px 3px rgba(35, 31, 32, 0.08);
+    margin-bottom: 1.5em;
+}
+.content--subpage__sidebar .box--sidebar .box-link__title {
+    display: block;
+    margin: 0;
+    padding: 0.6em 0.9em 0;
+    font-size: 110%;
+}
+.content--subpage__sidebar .box--sidebar .box-link-date {
+    position: relative;
+    bottom: auto;
+    margin: 0;
+    padding: 0.5em 0.9em 0 2.6em;
+}
+.content--subpage__sidebar .box--sidebar .box-link-cost {
+    position: relative;
+    bottom: auto;
+    margin: 0;
+    padding: 0.5em 0.9em 0.9em;
+}
+
