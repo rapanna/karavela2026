@@ -6252,6 +6252,7 @@ li.search {
     -ms-transform: translate(0px, -100%) scale(0, 0);
     transform: translate(0px, -100%) scale(0, 0);
     opacity: 0;
+    visibility: hidden;
 }
 
 #search input[type="search"] {
@@ -6319,6 +6320,7 @@ li.search {
     -ms-transform: translate(0px, 0px) scale(1, 1);
     transform: translate(0px, 0px) scale(1, 1);
     opacity: 1;
+    visibility: visible;
 }
 
 @media only screen and (max-width: 767px) {
@@ -7383,23 +7385,77 @@ body.front .slider-item__title {
     margin: 0 0 16px;
 }
 
+/* ── Kontaktní formulář „Zavolejte mi" – inline sekce na detailu zájezdu ── */
+.k26-contact-inline {
+    margin: 2.5em 0 3.5em;
+}
+
+/* Stejný vzhled jako blok „Cena zahrnuje/nezahrnuje" (.top_trip) – žlutý podklad, bez borderu/oblin */
+.k26-contact-inline__box {
+    background-color: #ffecac;
+    padding: 2.55556em 2.27778em;
+}
+
+.k26-contact-inline .title--h3 {
+    margin-top: 0;
+}
+
+.k26-contact-inline__intro {
+    margin: 0 0 1.4em;
+    font-size: 16px;
+}
+
+.k26-contact-inline form {
+    height: auto;
+    overflow: visible;
+}
+
+/* Tlačítko Odeslat – stejné jako „Zobraz další" (.k26-load-more): hnědé, hranaté */
+.k26-contact-inline .btn.btn-info,
+.k26-contact-inline .btn.btn-info:focus,
+.k26-contact-inline .btn.btn-info.focus {
+    display: inline-block;
+    cursor: pointer;
+    margin-top: 0.4em;
+    background-color: #4e2d00;
+    border: 0;
+    border-radius: 0;
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.9em 2em;
+    transition: background-color .2s ease;
+}
+
+.k26-contact-inline .btn.btn-info:hover,
+.k26-contact-inline .btn.btn-info:active,
+.k26-contact-inline .btn.btn-info:active:focus {
+    background-color: #693c00;
+    color: #fff;
+}
+
+.k26-contact-inline .g-recaptcha {
+    margin: 0 0 16px;
+}
+
 .reservation-message {
-    margin: 0 0 1em;
-    padding: 12px 16px;
-    border-radius: 4px;
+    margin: 0 0 1.4em;
+    padding: 14px 18px;
+    border-left: 4px solid #4e2d00;
     font-weight: 600;
+    color: #311c00;
 }
 
 .reservation-message--success {
-    background: #e6f4ea;
-    color: #1e7e34;
-    border: 1px solid #bcdfc7;
+    background: #f1ead9;
+    border-left-color: #4e2d00;
+    color: #4e2d00;
 }
 
 .reservation-message--error {
-    background: #fdecea;
-    color: #b02a37;
-    border: 1px solid #f5c2c7;
+    background: #f3ddcf;
+    border-left-color: #a8431e;
+    color: #6e2a12;
 }
 
 .content--trip__reservation-form__content .close {

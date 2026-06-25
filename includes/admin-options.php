@@ -81,7 +81,10 @@ function k26_render_nastaveni() {
                 </tr>
                 <tr>
                     <th scope="row">Email</th>
-                    <td><input type="text" name="karavela_email" value="<?= $v( 'karavela_email' ) ?>" class="regular-text"></td>
+                    <td>
+                        <input type="text" name="karavela_email" value="<?= $v( 'karavela_email' ) ?>" class="regular-text">
+                        <p class="description">Veřejný kontaktní e-mail zobrazený v patičce webu.</p>
+                    </td>
                 </tr>
                 <tr>
                     <th scope="row">Adresa</th>

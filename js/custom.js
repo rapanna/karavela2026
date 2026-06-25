@@ -64,28 +64,28 @@ jQuery( document ).ready(function() {
           });
     }
 
-    if($('.contact-form-btn').length){
-        $('.contact-form-btn').click(function( event ) {
-            event.preventDefault();
-            jQuery('#trip-contact-form').addClass("open");
-            jQuery(".content--trip__reservation-form__content form").css(
-                "height",
-                jQuery(".content--trip__reservation-form__content form").innerHeight() *
-                  0.8 +
-                "px"
-              );
-        });
+    // Kontaktní formulář „Zavolejte mi": povinný aspoň jeden z dvojice telefon/e-mail.
+    if($('#trip-contact-form .k26-contact-form').length){
+        var $contactForm = $('#trip-contact-form .k26-contact-form');
+        var $phone = $contactForm.find('#reservation_phone_c');
+        var $email = $contactForm.find('#reservation_email_c');
 
-        jQuery("#trip-contact-form, #trip-contact-form button.close").on("click keyup", function(event) {
-            if (
-              event.target == this ||
-              event.target.className == "close" ||
-              event.keyCode == 27
-            ) {
-              window.location.href = "https://karavela.cz";                
-              //jQuery(this).removeClass("open");
+        var clearOneOf = function(){
+            $phone[0].setCustomValidity('');
+            $email[0].setCustomValidity('');
+        };
+        $phone.add($email).on('input', clearOneOf);
+
+        $contactForm.on('submit', function( event ){
+            if ( $.trim( $phone.val() ) === '' && $.trim( $email.val() ) === '' ) {
+                var msg = 'Vyplňte prosím alespoň jeden kontakt – telefon, nebo e-mail.';
+                $phone[0].setCustomValidity(msg);
+                $phone[0].reportValidity();
+                event.preventDefault();
+            } else {
+                clearOneOf();
             }
-          });
+        });
     }
 
     if($('.more_terms_btn').length){

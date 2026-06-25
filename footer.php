@@ -67,7 +67,8 @@ if ( ! empty( $k26_whys ) && ! is_singular( 'trip' ) ) :
                 <h2>Kontakt</h2>
                 <p>CK Karavela s.r.o.<br>K Netlukám 1472/2<br>104 00 Praha 10</p>
                 <p><a class="tel" href="tel:+420722778088">722 778 088</a></p>
-                <p><a href="mailto:karavela@karavela.cz">karavela@karavela.cz</a></p>
+                <?php $footer_email = k26_setting( 'karavela_email' ); $footer_email = is_email( $footer_email ) ? $footer_email : 'karavela@karavela.cz'; ?>
+                <p><a href="mailto:<?php echo esc_attr( $footer_email ); ?>"><?php echo esc_html( $footer_email ); ?></a></p>
               </div>
             </div>
           </div>

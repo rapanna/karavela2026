@@ -47,7 +47,7 @@
 <div class="slider">
     <div class="slider-item">
         <div class="slider-item__img" style="background-image: url('<?php echo esc_url( $thumbnail ); ?>');"></div>
-        <h2 class="slider-item__title"><?php echo esc_html( $karavela_title ?: get_the_title() ); ?></h2>
+        <h1 class="slider-item__title"><?php echo esc_html( $karavela_title ?: get_the_title() ); ?></h1>
     </div>
 </div>
 <?php endif; ?>
@@ -66,8 +66,6 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12 content--subpage__main content-trip">
-
-                <h1 class="title title--text title--h1"><?php the_title(); ?></h1>
 
                 <div class="single-trip__content">
 

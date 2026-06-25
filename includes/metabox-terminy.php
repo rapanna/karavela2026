@@ -40,6 +40,8 @@ add_action( 'admin_enqueue_scripts', function ( $hook ) {
         .k26-col-info  { }
         .k26-col-garance { width: 64px; text-align: center; }
         #k26_terminy .k26-col-garance input[type=checkbox] { margin: 0; }
+        .k26-col-homepage { width: 80px; text-align: center; }
+        #k26_terminy .k26-col-homepage input[type=checkbox] { margin: 0; }
         .k26-col-del   { width: 30px; text-align: center; }
     ' );
 } );
@@ -57,6 +59,7 @@ function k26_terminy_render( WP_Post $post ): void {
     $lm   = (array) ( get_post_meta( $post->ID, 'tm_cena_lm_p',   true ) ?: [] );
     $info = (array) ( get_post_meta( $post->ID, 'tm_info_p',      true ) ?: [] );
     $gar  = (array) ( get_post_meta( $post->ID, 'tm_garance_p',   true ) ?: [] );
+    $hp   = (array) ( get_post_meta( $post->ID, 'tm_homepage_p',  true ) ?: [] );
 
     $count = max( count( $kod ), 1 );
     ?>
@@ -71,6 +74,7 @@ function k26_terminy_render( WP_Post $post ): void {
                 <th class="k26-col-lm">LM cena</th>
                 <th class="k26-col-info">Info</th>
                 <th class="k26-col-garance">Garance</th>
+                <th class="k26-col-homepage">Homepage</th>
                 <th class="k26-col-del"></th>
             </tr>
         </thead>
@@ -92,13 +96,18 @@ function k26_terminy_render( WP_Post $post ): void {
                     <input type="hidden" name="tm_garance_p[]" value="<?php echo $is_gar ? '1' : ''; ?>" class="k26-garance-val">
                     <input type="checkbox" class="k26-garance-cb" <?php checked( $is_gar ); ?> title="Garantovaný termín">
                 </td>
+                <?php $is_hp = in_array( $hp[ $i ] ?? '', [ '1', 'Ano' ], true ); ?>
+                <td class="k26-col-homepage">
+                    <input type="hidden" name="tm_homepage_p[]" value="<?php echo $is_hp ? '1' : ''; ?>" class="k26-homepage-val">
+                    <input type="checkbox" class="k26-homepage-cb" <?php checked( $is_hp ); ?> title="Zobrazit tento termín na homepage">
+                </td>
                 <td class="k26-col-del"><button type="button" class="k26-row-remove" title="Odebrat">✕</button></td>
             </tr>
         <?php endfor; ?>
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="9">
+                <td colspan="10">
                     <button type="button" id="k26-terminy-add" class="button">+ Přidat termín</button>
                 </td>
             </tr>
@@ -118,6 +127,7 @@ function k26_terminy_render( WP_Post $post ): void {
             + '<td class="k26-col-lm"> <input type="number" name="tm_cena_lm_p[]"   value="" min="0"></td>'
             + '<td class="k26-col-info"><input type="text"  name="tm_info_p[]"      value=""></td>'
             + '<td class="k26-col-garance"><input type="hidden" name="tm_garance_p[]" value="" class="k26-garance-val"><input type="checkbox" class="k26-garance-cb" title="Garantovaný termín"></td>'
+            + '<td class="k26-col-homepage"><input type="hidden" name="tm_homepage_p[]" value="" class="k26-homepage-val"><input type="checkbox" class="k26-homepage-cb" title="Zobrazit tento termín na homepage"></td>'
             + '<td class="k26-col-del"><button type="button" class="k26-row-remove" title="Odebrat">✕</button></td>'
             + '</tr>';
 
@@ -134,11 +144,15 @@ function k26_terminy_render( WP_Post $post ): void {
             }
         });
 
-        // Checkbox garance → zapiš stav do skrytého inputu (nezaškrtnuté checkboxy se neodesílají)
+        // Checkboxy garance/homepage → zapiš stav do skrytého inputu (nezaškrtnuté checkboxy se neodesílají)
         tbody.addEventListener('change', function(e){
             if ( e.target.classList.contains('k26-garance-cb') ) {
                 var hidden = e.target.closest('.k26-col-garance').querySelector('.k26-garance-val');
                 if ( hidden ) hidden.value = e.target.checked ? '1' : '';
+            }
+            if ( e.target.classList.contains('k26-homepage-cb') ) {
+                var hiddenHp = e.target.closest('.k26-col-homepage').querySelector('.k26-homepage-val');
+                if ( hiddenHp ) hiddenHp.value = e.target.checked ? '1' : '';
             }
         });
     })();
@@ -174,6 +188,11 @@ add_action( 'save_post_trip', function ( int $post_id ): void {
     $gar_raw = isset( $_POST['tm_garance_p'] ) ? (array) $_POST['tm_garance_p'] : [];
     $gar     = array_map( fn( $v ) => $v === '1' ? '1' : '', $gar_raw );
     update_post_meta( $post_id, 'tm_garance_p', $gar );
+
+    // Homepage: skrytý input na řádek → '1' / '' (který termín se ukáže na homepage)
+    $hp_raw = isset( $_POST['tm_homepage_p'] ) ? (array) $_POST['tm_homepage_p'] : [];
+    $hp     = array_map( fn( $v ) => $v === '1' ? '1' : '', $hp_raw );
+    update_post_meta( $post_id, 'tm_homepage_p', $hp );
 
     // Datum: YYYY-MM-DD → Unix timestamp (UTC půlnoc)
     foreach ( [ 'tm_od_p', 'tm_do_p' ] as $key ) {

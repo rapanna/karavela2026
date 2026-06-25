@@ -92,48 +92,90 @@ $main_query = new WP_Query( array(
     ) ),
 ) );
 
-$trips = array();
+$today = strtotime( 'today' );
+$cards = array();
 
 if ( $main_query->have_posts() ) {
     while ( $main_query->have_posts() ) {
         $main_query->the_post();
         $id        = get_the_ID();
         $alt_title = get_post_meta( $id, '_karavela_title', true );
-        $datumy    = karavela_tmps( $id );
-        $trip_info = karavela_preffered_date( $datumy, $id );
+        $title     = $alt_title ?: get_the_title();
+        $thumb     = get_the_post_thumbnail_url( $id, 'homepage_thumbnail' );
+        $link      = get_the_permalink( $id );
 
-        if ( empty( $trip_info ) ) {
-            asort( $datumy );
-            $trip_info = karavela_single_trip_date( $datumy );
+        $tm_od   = (array) ( get_post_meta( $id, 'tm_od_p',        true ) ?: [] );
+        $tm_do   = (array) ( get_post_meta( $id, 'tm_do_p',        true ) ?: [] );
+        $tm_celk = (array) ( get_post_meta( $id, 'tm_cena_celk_p', true ) ?: [] );
+        $tm_fm   = (array) ( get_post_meta( $id, 'tm_cena_fm_p',   true ) ?: [] );
+        $tm_lm   = (array) ( get_post_meta( $id, 'tm_cena_lm_p',   true ) ?: [] );
+        $tm_info = (array) ( get_post_meta( $id, 'tm_info_p',      true ) ?: [] );
+        $tm_hp   = (array) ( get_post_meta( $id, 'tm_homepage_p',  true ) ?: [] );
+
+        // Termíny zaškrtnuté „na homepage" a zároveň budoucí
+        $picked = array();
+        foreach ( $tm_od as $i => $od ) {
+            if ( empty( $od ) || (int) $od < $today ) continue;
+            if ( in_array( $tm_hp[ $i ] ?? '', array( '1', 'Ano' ), true ) ) {
+                $picked[] = $i;
+            }
         }
 
-        if ( empty( $trip_info['tm_od_p'][0] ) ) continue;
+        if ( $picked ) {
+            // Jedna karta na každý zaškrtnutý budoucí termín
+            foreach ( $picked as $i ) {
+                $cena_fm = is_numeric( $tm_fm[ $i ] ?? '' ) ? (int) $tm_fm[ $i ] : 0;
+                $cena_lm = is_numeric( $tm_lm[ $i ] ?? '' ) ? (int) $tm_lm[ $i ] : 0;
+                $cards[] = array(
+                    'title'     => $title,
+                    'thumbnail' => $thumb,
+                    'link'      => $link,
+                    'tm_od'     => date( 'd.m.Y', $tm_od[ $i ] ),
+                    'tm_do'     => ! empty( $tm_do[ $i ] ) ? date( 'd.m.Y', $tm_do[ $i ] ) : '',
+                    'day_count' => ! empty( $tm_do[ $i ] ) ? (int) floor( ( $tm_do[ $i ] - $tm_od[ $i ] ) / DAY_IN_SECONDS ) + 1 : 0,
+                    'cena'      => $tm_celk[ $i ] ?? 0,
+                    'cena_fm'   => number_format( $cena_fm, 0, ',', ' ' ),
+                    'cena_lm'   => $cena_lm ? number_format( $cena_lm, 0, ',', ' ' ) : '',
+                    'infop'     => $tm_info[ $i ] ?? '',
+                    'moreterm'  => 0, // konkrétní termín → bez „+N dalších termínů"
+                    'timestamp' => (int) $tm_od[ $i ],
+                );
+            }
+        } else {
+            // Fallback: žádný termín nezaškrtnut → zájezd jednou (preferovaný/nejbližší termín)
+            $datumy    = karavela_tmps( $id );
+            $trip_info = karavela_preffered_date( $datumy, $id );
+            if ( empty( $trip_info ) ) {
+                asort( $datumy );
+                $trip_info = karavela_single_trip_date( $datumy );
+            }
+            if ( empty( $trip_info['tm_od_p'][0] ) ) continue;
 
-        $cena_fm = is_numeric( $trip_info['tm_cena_fm_p'][0] ?? '' ) ? (int) $trip_info['tm_cena_fm_p'][0] : 0;
-        $cena_lm = is_numeric( $trip_info['tm_cena_lm_p'][0] ?? '' ) ? (int) $trip_info['tm_cena_lm_p'][0] : 0;
-        $tm_od   = get_post_meta( $id, 'tm_od_p', true );
+            $cena_fm = is_numeric( $trip_info['tm_cena_fm_p'][0] ?? '' ) ? (int) $trip_info['tm_cena_fm_p'][0] : 0;
+            $cena_lm = is_numeric( $trip_info['tm_cena_lm_p'][0] ?? '' ) ? (int) $trip_info['tm_cena_lm_p'][0] : 0;
 
-        $trips[ $id ] = array(
-            'title'     => $alt_title ?: get_the_title(),
-            'thumbnail' => get_the_post_thumbnail_url( $id, 'homepage_thumbnail' ),
-            'link'      => get_the_permalink( $id ),
-            'tm_od'     => date( 'd.m.Y', $trip_info['tm_od_p'][0] ),
-            'tm_do'     => date( 'd.m.Y', $trip_info['tm_do_p'][0] ),
-            'day_count' => (int) floor( ( $trip_info['tm_do_p'][0] - $trip_info['tm_od_p'][0] ) / DAY_IN_SECONDS ) + 1,
-            'cena'      => $trip_info['tm_cena_celk_p'][0],
-            'cena_fm'   => number_format( $cena_fm, 0, ',', ' ' ),
-            'cena_lm'   => $cena_lm ? number_format( $cena_lm, 0, ',', ' ' ) : '',
-            'infop'     => $trip_info['tm_info_p'][0] ?? '',
-            'moreterm'  => count( (array) $tm_od ),
-            'timestamp' => $trip_info['tm_od_p'][0],
-        );
+            $cards[] = array(
+                'title'     => $title,
+                'thumbnail' => $thumb,
+                'link'      => $link,
+                'tm_od'     => date( 'd.m.Y', $trip_info['tm_od_p'][0] ),
+                'tm_do'     => date( 'd.m.Y', $trip_info['tm_do_p'][0] ),
+                'day_count' => (int) floor( ( $trip_info['tm_do_p'][0] - $trip_info['tm_od_p'][0] ) / DAY_IN_SECONDS ) + 1,
+                'cena'      => $trip_info['tm_cena_celk_p'][0],
+                'cena_fm'   => number_format( $cena_fm, 0, ',', ' ' ),
+                'cena_lm'   => $cena_lm ? number_format( $cena_lm, 0, ',', ' ' ) : '',
+                'infop'     => $trip_info['tm_info_p'][0] ?? '',
+                'moreterm'  => count( (array) $tm_od ),
+                'timestamp' => (int) $trip_info['tm_od_p'][0],
+            );
+        }
     }
     wp_reset_postdata();
 }
 
-usort( $trips, fn( $a, $b ) => $a['timestamp'] <=> $b['timestamp'] );
+usort( $cards, fn( $a, $b ) => $a['timestamp'] <=> $b['timestamp'] );
 
-foreach ( $trips as $trip ) :
+foreach ( $cards as $trip ) :
     $cena_default   = number_format( (float) $trip['cena'], 0, ',', ' ' );
     $cena_firstmin  = firstminute( $trip['tm_od'], $trip['cena'] );
     $moreterm       = $trip['moreterm'];
