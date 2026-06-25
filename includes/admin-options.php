@@ -38,11 +38,14 @@ function k26_render_nastaveni() {
         foreach ( [ 'karavela_main_telefon', 'karavela_alt_telefon', 'karavela_alt_telefon2',
                     'karavela_email', 'karavela_adresa',
                     'karavela_objednavky_email', 'karavela_kontakt_email',
-                    'karavela_recaptcha_site', 'karavela_recaptcha_secret' ] as $f ) {
+                    'karavela_recaptcha_site', 'karavela_recaptcha_secret',
+                    'karavela_pojisteni_text' ] as $f ) {
             $data[ $f ] = sanitize_text_field( $_POST[ $f ] ?? '' );
         }
 
-        $data['karavela_podminky'] = wp_kses_post( $_POST['karavela_podminky'] ?? '' );
+        $data['karavela_podminky']       = wp_kses_post( $_POST['karavela_podminky'] ?? '' );
+        $data['karavela_viza_page']      = absint( $_POST['karavela_viza_page'] ?? 0 );
+        $data['karavela_pojisteni_page'] = absint( $_POST['karavela_pojisteni_page'] ?? 0 );
 
         $partners = [];
         foreach ( (array) ( $_POST['partners_image'] ?? [] ) as $i => $img ) {
@@ -116,6 +119,37 @@ function k26_render_nastaveni() {
                     <td>
                         <input type="text" name="karavela_recaptcha_secret" value="<?= $v( 'karavela_recaptcha_secret' ) ?>" class="regular-text">
                         <p class="description">Google reCAPTCHA v2 „Secret key" (serverové ověření).</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Stránka s informacemi o vízech</th>
+                    <td>
+                        <?php wp_dropdown_pages( [
+                            'name'              => 'karavela_viza_page',
+                            'selected'          => (int) ( $opts['karavela_viza_page'] ?? 0 ),
+                            'show_option_none'  => '— žádná —',
+                            'option_none_value' => 0,
+                        ] ); ?>
+                        <p class="description">Cíl odkazu „Povinné registrace a víza" u zájezdů, které mají v Specifikaci zaškrtnuto „Země vyžaduje vízum".</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Cestovní pojištění – text</th>
+                    <td>
+                        <input type="text" name="karavela_pojisteni_text" value="<?= $v( 'karavela_pojisteni_text' ) ?>" class="regular-text" placeholder="Zajišťujeme tato cestovní pojištění">
+                        <p class="description">Text odkazu na cestovní pojištění u zájezdů. Prázdné = výchozí „Zajišťujeme tato cestovní pojištění".</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Cestovní pojištění – stránka</th>
+                    <td>
+                        <?php wp_dropdown_pages( [
+                            'name'              => 'karavela_pojisteni_page',
+                            'selected'          => (int) ( $opts['karavela_pojisteni_page'] ?? 0 ),
+                            'show_option_none'  => '— výchozí (Cestovní pojištění) —',
+                            'option_none_value' => 0,
+                        ] ); ?>
+                        <p class="description">Cíl odkazu na cestovní pojištění. Prázdné = výchozí stránka „Cestovní pojištění".</p>
                     </td>
                 </tr>
                 <tr>

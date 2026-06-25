@@ -101,6 +101,7 @@ function k26_specifikace_render( WP_Post $post ): void {
     $pocet_klientu      = get_post_meta( $post->ID, 'pocet_klientu', true );
     $seznam_odjezdovych = get_post_meta( $post->ID, 'seznam_odjezdovych_mist', true );
     $pojisteni          = get_post_meta( $post->ID, 'pojisteni',   true );
+    $viza               = get_post_meta( $post->ID, 'k26_viza',    true );
     $doplnujici_text    = get_post_meta( $post->ID, 'k26_doplnujici_text', true );
 
     $zahrnuje_items   = k26_get_cena_items( $post->ID, 'k26_cena_zahrnuje',   'cena_zahrnuje' );
@@ -176,6 +177,10 @@ function k26_specifikace_render( WP_Post $post ): void {
                 <label style="margin-top:8px;display:block">
                     <input type="checkbox" name="pojisteni" value="1" <?php checked( $pojisteni, '1' ); ?>>
                     Nelze pojistit (skryje odkaz na cestovní pojištění)
+                </label>
+                <label style="margin-top:8px;display:block">
+                    <input type="checkbox" name="k26_viza" value="1" <?php checked( $viza, '1' ); ?>>
+                    Země vyžaduje vízum (přidá tučný řádek „Povinné registrace a víza" do „Cena nezahrnuje")
                 </label>
             </td>
         </tr>
@@ -292,5 +297,11 @@ add_action( 'save_post_trip', function ( int $post_id ): void {
         update_post_meta( $post_id, 'pojisteni', '1' );
     } else {
         delete_post_meta( $post_id, 'pojisteni' );
+    }
+
+    if ( ! empty( $_POST['k26_viza'] ) ) {
+        update_post_meta( $post_id, 'k26_viza', '1' );
+    } else {
+        delete_post_meta( $post_id, 'k26_viza' );
     }
 } );

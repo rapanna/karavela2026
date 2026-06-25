@@ -194,6 +194,7 @@ add_filter( 'pre_get_posts', 'k26_search_only_trips' );
 function k26_search_only_trips( WP_Query $query ) {
     if ( $query->is_search() && ! is_admin() && $query->is_main_query() ) {
         $query->set( 'post_type', array( 'trip' ) );
+        $query->set( 'posts_per_page', -1 ); // všechny výsledky → filtr termínů v PHP (search.php)
     }
     if ( $query->is_tax( 'kategorie' ) && $query->is_main_query() ) {
         $query->set( 'posts_per_page', -1 );

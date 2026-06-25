@@ -29,6 +29,7 @@
     $karavela_title     = get_post_meta( $post_id, '_karavela_title', true );
     $pocet_klientu      = get_post_meta( $post_id, 'pocet_klientu',   true );
     $pojisteni          = get_post_meta( $post_id, 'pojisteni',        true );
+    $viza               = get_post_meta( $post_id, 'k26_viza',         true );
     $zahrnuje_items     = k26_get_cena_items( $post_id, 'k26_cena_zahrnuje',   'cena_zahrnuje' );
     $nezahrnuje_items   = k26_get_cena_items( $post_id, 'k26_cena_nezahrnuje', 'cena_nezahrnuje' );
     $doplnujici_text    = get_post_meta( $post_id, 'k26_doplnujici_text', true );
@@ -150,7 +151,7 @@
                     <?php endif; ?>
 
                     <!-- ── Cena zahrnuje / nezahrnuje ────────────────────────── -->
-                    <?php if ( $zahrnuje_items || $nezahrnuje_items || $doplnujici_text ) : ?>
+                    <?php if ( $zahrnuje_items || $nezahrnuje_items || $doplnujici_text || $viza === '1' ) : ?>
                     <div class="reference top_trip">
                         <?php if ( $zahrnuje_items ) : ?>
                         <div class="row">
@@ -162,15 +163,31 @@
                             </div>
                         </div>
                         <?php endif; ?>
-                        <?php if ( $nezahrnuje_items ) : ?>
+                        <?php if ( $nezahrnuje_items || $viza === '1' ) : ?>
                         <div class="row">
                             <div class="col-sm-12"><h3 style="margin-top:0.8em">Cena nezahrnuje</h3></div>
                         </div>
                         <div class="row">
                             <div class="col-sm-12">
+                                <?php if ( $nezahrnuje_items ) : ?>
                                 <ul><?php foreach ( $nezahrnuje_items as $polo ) echo '<li>' . wp_kses_post( $polo ) . '</li>'; ?></ul>
-                                <?php if ( empty( $pojisteni ) || $pojisteni === '0' ) : ?>
-                                <ul class="cestpojisteni"><li><strong><a href="<?php echo esc_url( get_permalink( 145 ) ); ?>">Zajišťujeme tato cestovní pojištění</a></strong></li></ul>
+                                <?php endif; ?>
+                                <?php if ( empty( $pojisteni ) || $pojisteni === '0' ) :
+                                    $poj_text = k26_setting( 'karavela_pojisteni_text' );
+                                    $poj_text = $poj_text !== '' ? $poj_text : 'Zajišťujeme tato cestovní pojištění';
+                                    $poj_page = (int) k26_setting( 'karavela_pojisteni_page' );
+                                    $poj_page = ( $poj_page && get_post_status( $poj_page ) === 'publish' ) ? $poj_page : 145;
+                                ?>
+                                <ul class="cestpojisteni"><li><strong><a href="<?php echo esc_url( get_permalink( $poj_page ) ); ?>"><?php echo esc_html( $poj_text ); ?></a></strong></li></ul>
+                                <?php endif; ?>
+                                <?php if ( $viza === '1' ) :
+                                    $viza_page = (int) k26_setting( 'karavela_viza_page' );
+                                ?>
+                                <ul class="cest-viza"><li><strong>Povinné registrace a víza viz:
+                                    <?php if ( $viza_page && get_post_status( $viza_page ) === 'publish' ) : ?>
+                                        <a href="<?php echo esc_url( get_permalink( $viza_page ) ); ?>"><?php echo esc_html( get_the_title( $viza_page ) ); ?></a>
+                                    <?php endif; ?>
+                                </strong></li></ul>
                                 <?php endif; ?>
                             </div>
                         </div>

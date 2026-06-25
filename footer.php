@@ -89,8 +89,12 @@ if ( ! empty( $k26_whys ) && ! is_singular( 'trip' ) ) :
 
     <div id="search">
       <button type="button" class="close">×</button>
-      <form method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-        <input type="search" name="s" value="" placeholder="Vyhledat zájezd">
+      <form method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>" class="k26-search-overlay">
+        <input type="search" name="s" value="" placeholder="Vyhledat zájezd podle názvu" class="k26-search-overlay__text">
+        <div class="k26-search-overlay__dates">
+          <label>V termínu od <input type="date" name="od" value=""></label>
+          <label>do <input type="date" name="do" value=""></label>
+        </div>
         <button type="submit" class="btn btn-primary">Vyhledat</button>
       </form>
     </div>

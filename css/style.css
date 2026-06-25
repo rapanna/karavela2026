@@ -6255,41 +6255,76 @@ li.search {
     visibility: hidden;
 }
 
-#search input[type="search"] {
-    position: absolute;
-    top: 50%;
-    width: 80%;
-    left: 10%;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.7);
-    font-size: 60px;
-    font-weight: 300;
-    text-align: center;
-    border: 0px;
-    margin: 0px auto;
-    margin-top: -51px;
-    padding-left: 30px;
-    padding-right: 30px;
-    outline: none;
-}
-
-#search .btn {
+/* Vycentrovaný formulář v overlay (název + termín od/do + tlačítko) */
+.k26-search-overlay {
     position: absolute;
     top: 50%;
     left: 50%;
-    margin-top: 61px;
-    margin-left: -45px;
-    padding-right: 2.44444em;
-    padding-left: 2.44444em;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 680px;
+    text-align: center;
+}
+
+#search input[type="search"] {
+    width: 100%;
+    color: #311c00;
+    background: rgba(255, 255, 255, 0.95);
+    font-size: 30px;
+    font-weight: 300;
+    text-align: center;
+    border: 0;
+    margin: 0 0 18px;
+    padding: 12px 20px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.k26-search-overlay__dates {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+
+.k26-search-overlay__dates label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.k26-search-overlay__dates input[type="date"] {
+    border: 0;
+    padding: 9px 12px;
+    font-size: 15px;
+    font-weight: 400;
+    color: #311c00;
+    background: #fff;
+}
+
+#search .btn {
+    display: inline-block;
     text-decoration: none;
     text-transform: uppercase;
     font-family: "Roboto Condensed", Arial, sans-serif;
     border: none;
     border-radius: 0;
     background-color: #ffc708;
-    padding-top: 0;
-    padding-bottom: 0;
-    line-height: 3.22222em;
+    padding: 14px 40px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #311c00;
+    cursor: pointer;
+}
+
+#search .btn:hover,
+#search .btn:focus {
+    background-color: #e6b400;
     color: #311c00;
 }
 
@@ -7655,7 +7690,6 @@ body.front .slider-item__title {
     .recommended-trips {
         display: flex;
         flex-wrap: wrap;
-        max-width: 100%;
     }
 }
 
@@ -7687,7 +7721,6 @@ body.front .slider-item__title {
     .recommended-trips {
         display: flex;
         flex-wrap: wrap;
-        max-width: 100%;
     }
     .recommended-trips .col-sm-3,
     .recommended-trips .col-sm-4,
@@ -7870,6 +7903,79 @@ table.bordertable th, table.bordertable td {
 
 .cestpojisteni {
     margin-top: 1rem;
+}
+
+.cest-viza {
+    margin-top: 1rem;
+}
+
+/* ── Vyhledávání zájezdů – šedý podklad jako homepage ─────────────────────── */
+.content--search {
+    background-color: #f7f7f6;
+    padding-top: 2.2em;
+    padding-bottom: 2.5em;
+}
+
+/* ── Vyhledávání zájezdů – formulář na výsledkové stránce ─────────────────── */
+.k26-search-form {
+    background-color: #ffecac;
+    padding: 1.8em 2em;
+    margin-bottom: 1.8em;
+}
+.k26-search-form__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
+}
+.k26-search-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-weight: 700;
+    color: #311c00;
+    font-size: 14px;
+}
+.k26-search-form__field--text {
+    flex: 1 1 240px;
+}
+.k26-search-form__field input {
+    height: 44px;
+    box-sizing: border-box;
+    border: 1px solid #d8c98f;
+    background: #fff;
+    padding: 0 12px;
+    font-size: 15px;
+    font-weight: 400;
+    color: #311c00;
+}
+.k26-search-form__submit {
+    height: 44px;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #4e2d00;
+    color: #fff;
+    border: 0;
+    border-radius: 0;
+    padding: 0 2em;
+    font-size: 15px;
+    line-height: 1;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color .2s ease;
+}
+.k26-search-form__submit:hover,
+.k26-search-form__submit:focus {
+    background-color: #693c00;
+    color: #fff;
+}
+.k26-search-summary {
+    margin: 0 0 1em;
+    color: #555;
 }
 
 .reference.top_trip p {
