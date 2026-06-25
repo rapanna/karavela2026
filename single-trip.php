@@ -178,16 +178,15 @@
                                     $poj_page = (int) k26_setting( 'karavela_pojisteni_page' );
                                     $poj_page = ( $poj_page && get_post_status( $poj_page ) === 'publish' ) ? $poj_page : 145;
                                 ?>
-                                <ul class="cestpojisteni"><li><strong><a href="<?php echo esc_url( get_permalink( $poj_page ) ); ?>"><?php echo esc_html( $poj_text ); ?></a></strong></li></ul>
+                                <p class="cestpojisteni"><strong><a href="<?php echo esc_url( get_permalink( $poj_page ) ); ?>"><?php echo esc_html( $poj_text ); ?></a></strong></p>
                                 <?php endif; ?>
                                 <?php if ( $viza === '1' ) :
                                     $viza_page = (int) k26_setting( 'karavela_viza_page' );
+                                    $viza_text = k26_setting( 'karavela_viza_text' );
+                                    $viza_text = $viza_text !== '' ? $viza_text : 'Zájezd vyžaduje víza';
+                                    $viza_link = ( $viza_page && get_post_status( $viza_page ) === 'publish' );
                                 ?>
-                                <ul class="cest-viza"><li><strong>Povinné registrace a víza viz:
-                                    <?php if ( $viza_page && get_post_status( $viza_page ) === 'publish' ) : ?>
-                                        <a href="<?php echo esc_url( get_permalink( $viza_page ) ); ?>"><?php echo esc_html( get_the_title( $viza_page ) ); ?></a>
-                                    <?php endif; ?>
-                                </strong></li></ul>
+                                <p class="cest-viza"><strong><?php if ( $viza_link ) : ?><a href="<?php echo esc_url( get_permalink( $viza_page ) ); ?>"><?php echo esc_html( $viza_text ); ?></a><?php else : ?><?php echo esc_html( $viza_text ); ?><?php endif; ?></strong></p>
                                 <?php endif; ?>
                             </div>
                         </div>

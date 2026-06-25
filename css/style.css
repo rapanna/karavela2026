@@ -7901,12 +7901,12 @@ table.bordertable th, table.bordertable td {
     text-decoration: none;
 }
 
-.cestpojisteni {
-    margin-top: 1rem;
-}
-
+.reference.top_trip .cestpojisteni,
+.reference.top_trip .cest-viza,
+.cestpojisteni,
 .cest-viza {
     margin-top: 1rem;
+    margin-bottom: 0;
 }
 
 /* ── Vyhledávání zájezdů – šedý podklad jako homepage ─────────────────────── */

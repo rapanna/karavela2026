@@ -39,7 +39,7 @@ function k26_render_nastaveni() {
                     'karavela_email', 'karavela_adresa',
                     'karavela_objednavky_email', 'karavela_kontakt_email',
                     'karavela_recaptcha_site', 'karavela_recaptcha_secret',
-                    'karavela_pojisteni_text' ] as $f ) {
+                    'karavela_pojisteni_text', 'karavela_viza_text' ] as $f ) {
             $data[ $f ] = sanitize_text_field( $_POST[ $f ] ?? '' );
         }
 
@@ -119,6 +119,13 @@ function k26_render_nastaveni() {
                     <td>
                         <input type="text" name="karavela_recaptcha_secret" value="<?= $v( 'karavela_recaptcha_secret' ) ?>" class="regular-text">
                         <p class="description">Google reCAPTCHA v2 „Secret key" (serverové ověření).</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Víza – text</th>
+                    <td>
+                        <input type="text" name="karavela_viza_text" value="<?= $v( 'karavela_viza_text' ) ?>" class="regular-text" placeholder="Zájezd vyžaduje víza">
+                        <p class="description">Text odkazu na víza u zájezdů s vízovou povinností (celá věta je odkaz). Prázdné = výchozí „Zájezd vyžaduje víza".</p>
                     </td>
                 </tr>
                 <tr>
