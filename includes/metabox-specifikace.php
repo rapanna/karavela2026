@@ -20,6 +20,8 @@ add_action( 'admin_enqueue_scripts', function ( $hook ) {
     if ( $hook !== 'post.php' && $hook !== 'post-new.php' ) return;
     if ( get_post_type() !== 'trip' ) return;
 
+    wp_enqueue_script( 'jquery-ui-sortable' );
+
     wp_add_inline_style( 'wp-admin', '
         #k26_specifikace table { border-collapse: collapse; width: 100%; }
         #k26_specifikace th { background: #f0f0f1; padding: 6px 8px; text-align: left; font-size: 12px; width: 200px; vertical-align: top; padding-top: 10px; }
@@ -34,6 +36,10 @@ add_action( 'admin_enqueue_scripts', function ( $hook ) {
         .k26-cena-list { width: 100%; }
         .k26-cena-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
         .k26-cena-row input[type=text] { flex: 1; }
+        .k26-cena-handle { cursor: move; color: #8a8a8a; flex-shrink: 0; padding: 2px 4px; font-size: 14px; line-height: 1; user-select: none; }
+        .k26-cena-handle:hover { color: #2271b1; }
+        .k26-cena-row.ui-sortable-helper { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+        .k26-cena-placeholder { background: #fffbe5; outline: 1px dashed #f0c33c; height: 30px; margin-bottom: 4px; }
         .k26-btn-bold { font-weight: bold; font-size: 12px; padding: 1px 7px; min-height: 24px; line-height: 22px; flex-shrink: 0; }
         .k26-row-remove { color: #b32d2e; cursor: pointer; border: none; background: none; font-size: 16px; line-height: 1; padding: 2px 6px; flex-shrink: 0; }
         .k26-row-remove:hover { color: #8a1f1f; }
@@ -141,6 +147,7 @@ function k26_specifikace_render( WP_Post $post ): void {
                 <div class="k26-cena-list" id="k26-zahrnuje-list">
                     <?php foreach ( $zahrnuje_items as $item ) : ?>
                     <div class="k26-cena-row">
+                        <span class="k26-cena-handle" title="Přetáhnout pro změnu pořadí">⠿</span>
                         <button type="button" class="button button-small k26-btn-bold" title="Tučně – označte část textu">B</button>
                         <input type="text" name="k26_cena_zahrnuje[]" value="<?php echo esc_attr( $item ); ?>">
                         <button type="button" class="k26-row-remove" title="Odebrat">✕</button>
@@ -158,6 +165,7 @@ function k26_specifikace_render( WP_Post $post ): void {
                 <div class="k26-cena-list" id="k26-nezahrnuje-list">
                     <?php foreach ( $nezahrnuje_items as $item ) : ?>
                     <div class="k26-cena-row">
+                        <span class="k26-cena-handle" title="Přetáhnout pro změnu pořadí">⠿</span>
                         <button type="button" class="button button-small k26-btn-bold" title="Tučně – označte část textu">B</button>
                         <input type="text" name="k26_cena_nezahrnuje[]" value="<?php echo esc_attr( $item ); ?>">
                         <button type="button" class="k26-row-remove" title="Odebrat">✕</button>
@@ -221,13 +229,26 @@ function k26_specifikace_render( WP_Post $post ): void {
 
         document.querySelectorAll('.k26-cena-row').forEach( initRow );
 
+        // Drag & drop řazení řádků (jQuery UI Sortable, úchyt = grip ⠿).
+        // Pořadí <div> v DOM = pořadí v $_POST poli = pořadí uložení, žádný sync netřeba.
+        if ( window.jQuery && jQuery.fn.sortable ) {
+            jQuery('.k26-cena-list').sortable({
+                axis: 'y',
+                handle: '.k26-cena-handle',
+                items: '> .k26-cena-row',
+                placeholder: 'k26-cena-placeholder',
+                forcePlaceholderSize: true
+            });
+        }
+
         document.querySelectorAll('.k26-cena-add').forEach(function( btn ){
             btn.addEventListener('click', function(){
                 var list = document.getElementById( btn.dataset.list );
                 var name = btn.dataset.name;
                 var div  = document.createElement('div');
                 div.className = 'k26-cena-row';
-                div.innerHTML = '<button type="button" class="button button-small k26-btn-bold" title="Tučně">B</button>'
+                div.innerHTML = '<span class="k26-cena-handle" title="Přetáhnout pro změnu pořadí">⠿</span>'
+                    + '<button type="button" class="button button-small k26-btn-bold" title="Tučně">B</button>'
                     + '<input type="text" name="' + name + '" value="">'
                     + '<button type="button" class="k26-row-remove" title="Odebrat">✕</button>';
                 list.appendChild( div );

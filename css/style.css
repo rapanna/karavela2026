@@ -8098,6 +8098,26 @@ table.bordertable th, table.bordertable td {
 .k26-trip-card { transition: opacity .45s ease, transform .45s ease; }
 .k26-trip-card.k26-revealing { opacity: 0; transform: translateY(12px); }
 
+/* ── Homepage: Seznam zájezdů – jednoduchá karta (jen obrázek + název dole) ── */
+.content--hp-list .view { padding-top: 3em; padding-bottom: 2em; }
+.k26-trip-list .k26-trip-card { margin-bottom: 24px; }
+.k26-trip-simple { position: relative; display: block; overflow: hidden; }
+.k26-trip-simple__img { width: 100%; height: 240px; object-fit: cover; display: block; }
+.k26-trip-simple__title {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    margin: 0;
+    padding: 32px 14px 12px;
+    color: #fff;
+    font-family: "Roboto Condensed", Arial, sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 16px;
+    line-height: 1.2;
+    background: linear-gradient(to top, rgba(35,31,32,.9), rgba(35,31,32,0));
+}
+.k26-trip-simple:hover .k26-trip-simple__title { text-decoration: underline; }
+
 /* ── Stránka Reference: jednotlivé reference jako oddělené karty ─────────── */
 .reference-item {
     display: flex;

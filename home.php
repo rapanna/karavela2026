@@ -81,15 +81,12 @@ foreach ( $slider_items as $slide ) : ?>
             </div>
             <div class="row recommended-trips">
 <?php
+// Sekci řídí výhradně per-termín checkbox „Homepage" (tm_homepage_p) – ne taxonomie.
+// Bereme všechny zájezdy a vybíráme z nich zaškrtnuté budoucí termíny.
 $main_query = new WP_Query( array(
     'post_type'      => 'trip',
-    'posts_per_page' => 29,
+    'posts_per_page' => -1,
     'no_found_rows'  => true,
-    'tax_query'      => array( array(
-        'taxonomy' => 'categories',
-        'field'    => 'name',
-        'terms'    => 'Doporučujeme',
-    ) ),
 ) );
 
 $today = strtotime( 'today' );
@@ -121,52 +118,23 @@ if ( $main_query->have_posts() ) {
             }
         }
 
-        if ( $picked ) {
-            // Jedna karta na každý zaškrtnutý budoucí termín
-            foreach ( $picked as $i ) {
-                $cena_fm = is_numeric( $tm_fm[ $i ] ?? '' ) ? (int) $tm_fm[ $i ] : 0;
-                $cena_lm = is_numeric( $tm_lm[ $i ] ?? '' ) ? (int) $tm_lm[ $i ] : 0;
-                $cards[] = array(
-                    'title'     => $title,
-                    'thumbnail' => $thumb,
-                    'link'      => $link,
-                    'tm_od'     => date( 'd.m.Y', $tm_od[ $i ] ),
-                    'tm_do'     => ! empty( $tm_do[ $i ] ) ? date( 'd.m.Y', $tm_do[ $i ] ) : '',
-                    'day_count' => ! empty( $tm_do[ $i ] ) ? (int) floor( ( $tm_do[ $i ] - $tm_od[ $i ] ) / DAY_IN_SECONDS ) + 1 : 0,
-                    'cena'      => $tm_celk[ $i ] ?? 0,
-                    'cena_fm'   => number_format( $cena_fm, 0, ',', ' ' ),
-                    'cena_lm'   => $cena_lm ? number_format( $cena_lm, 0, ',', ' ' ) : '',
-                    'infop'     => $tm_info[ $i ] ?? '',
-                    'moreterm'  => 0, // konkrétní termín → bez „+N dalších termínů"
-                    'timestamp' => (int) $tm_od[ $i ],
-                );
-            }
-        } else {
-            // Fallback: žádný termín nezaškrtnut → zájezd jednou (preferovaný/nejbližší termín)
-            $datumy    = karavela_tmps( $id );
-            $trip_info = karavela_preffered_date( $datumy, $id );
-            if ( empty( $trip_info ) ) {
-                asort( $datumy );
-                $trip_info = karavela_single_trip_date( $datumy );
-            }
-            if ( empty( $trip_info['tm_od_p'][0] ) ) continue;
-
-            $cena_fm = is_numeric( $trip_info['tm_cena_fm_p'][0] ?? '' ) ? (int) $trip_info['tm_cena_fm_p'][0] : 0;
-            $cena_lm = is_numeric( $trip_info['tm_cena_lm_p'][0] ?? '' ) ? (int) $trip_info['tm_cena_lm_p'][0] : 0;
-
+        // Jedna karta na každý zaškrtnutý budoucí termín (žádný fallback)
+        foreach ( $picked as $i ) {
+            $cena_fm = is_numeric( $tm_fm[ $i ] ?? '' ) ? (int) $tm_fm[ $i ] : 0;
+            $cena_lm = is_numeric( $tm_lm[ $i ] ?? '' ) ? (int) $tm_lm[ $i ] : 0;
             $cards[] = array(
                 'title'     => $title,
                 'thumbnail' => $thumb,
                 'link'      => $link,
-                'tm_od'     => date( 'd.m.Y', $trip_info['tm_od_p'][0] ),
-                'tm_do'     => date( 'd.m.Y', $trip_info['tm_do_p'][0] ),
-                'day_count' => (int) floor( ( $trip_info['tm_do_p'][0] - $trip_info['tm_od_p'][0] ) / DAY_IN_SECONDS ) + 1,
-                'cena'      => $trip_info['tm_cena_celk_p'][0],
+                'tm_od'     => date( 'd.m.Y', $tm_od[ $i ] ),
+                'tm_do'     => ! empty( $tm_do[ $i ] ) ? date( 'd.m.Y', $tm_do[ $i ] ) : '',
+                'day_count' => ! empty( $tm_do[ $i ] ) ? (int) floor( ( $tm_do[ $i ] - $tm_od[ $i ] ) / DAY_IN_SECONDS ) + 1 : 0,
+                'cena'      => $tm_celk[ $i ] ?? 0,
                 'cena_fm'   => number_format( $cena_fm, 0, ',', ' ' ),
                 'cena_lm'   => $cena_lm ? number_format( $cena_lm, 0, ',', ' ' ) : '',
-                'infop'     => $trip_info['tm_info_p'][0] ?? '',
-                'moreterm'  => count( (array) $tm_od ),
-                'timestamp' => (int) $trip_info['tm_od_p'][0],
+                'infop'     => $tm_info[ $i ] ?? '',
+                'moreterm'  => 0, // konkrétní termín → bez „+N dalších termínů"
+                'timestamp' => (int) $tm_od[ $i ],
             );
         }
     }
@@ -219,6 +187,60 @@ foreach ( $cards as $trip ) :
             </div><!-- .row -->
         </div><!-- .container -->
     </div><!-- .view -->
+</main>
+
+<!-- Seznam zájezdů -->
+<?php
+// Všechny zájezdy – jednoduchá karta (jen obrázek + název dole), postupné načítání po X (WP nastavení).
+$per    = max( 1, (int) get_option( 'posts_per_page' ) );
+$list_q = new WP_Query( array(
+    'post_type'      => 'trip',
+    'posts_per_page' => -1,
+    'no_found_rows'  => true,
+    'post_status'    => 'publish',
+    'orderby'        => 'title',
+    'order'          => 'ASC',
+) );
+$i = 0;
+?>
+<main role="main" class="content content--hp content--hp-list">
+    <div class="view">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <h1><a href="<?php echo esc_url( get_post_type_archive_link( 'trip' ) ); ?>">Seznam zájezdů</a></h1>
+                </div>
+            </div>
+            <div class="row k26-trip-list">
+            <?php if ( $list_q->have_posts() ) :
+                while ( $list_q->have_posts() ) : $list_q->the_post();
+                    $id    = get_the_ID();
+                    $alt   = get_post_meta( $id, '_karavela_title', true );
+                    $title = $alt ?: get_the_title();
+                    $thumb = get_the_post_thumbnail_url( $id, 'homepage_thumbnail' );
+                    if ( ! $thumb ) continue; // bez obrázku karta nemá smysl
+                    $hidden = $i >= $per ? ' k26-trip-hidden' : '';
+                    $i++;
+            ?>
+                <div class="col-sm-4 col-md-3 k26-trip-card<?php echo $hidden; ?>">
+                    <a href="<?php echo esc_url( get_permalink( $id ) ); ?>" class="k26-trip-simple">
+                        <img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( $title ); ?>" class="k26-trip-simple__img">
+                        <span class="k26-trip-simple__title"><?php echo esc_html( $title ); ?></span>
+                    </a>
+                </div>
+            <?php endwhile; wp_reset_postdata(); else : ?>
+                <div class="col-sm-12"><p>Žádné zájezdy nenalezeny.</p></div>
+            <?php endif; ?>
+            </div>
+            <?php if ( $i > $per ) : ?>
+            <div class="row">
+                <div class="col-sm-12" style="text-align:center; margin-top:1em;">
+                    <button type="button" class="btn btn-info k26-load-more" data-batch="<?php echo esc_attr( $per ); ?>">Zobraz další zájezdy</button>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
 </main>
 
 <?php get_footer(); ?>

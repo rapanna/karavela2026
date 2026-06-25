@@ -217,7 +217,7 @@ jQuery( document ).ready(function() {
 (function(){
     var btn = document.querySelector('.k26-load-more');
     if ( ! btn ) return;
-    var batch = 12, stagger = 90, busy = false;
+    var batch = parseInt( btn.dataset.batch, 10 ) || 12, stagger = 90, busy = false;
 
     btn.addEventListener('click', function(){
         if ( busy ) return;
